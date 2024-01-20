@@ -73,6 +73,18 @@ class User(db.Model, SerializerMixin):
         if (val in unms): raise ValueError("usernames must be unique!");
         else: return val;
 
+    @hybrid_property
+    def password_hash(self):
+        raise AttributeError("not allowed to view the password hash outside of this class!");
+
+    @password_hash.setter
+    def password_hash(self, val):
+        phsh = bcrypt.generate_password_hash(val.encode("utf-8"));
+        self._password_hash = phsh.decode("utf-8");
+    
+    def authenticate(self, val):
+        return bcrypt.check_password_hash(self._password_hash, val.encode("utf-8"));
+
     def __repr__(self):
         return f"<User: id: {self.id}, name: {self.username}, image_url: {self.image_url}, bio: {self.bio}>, recipies: {self.recepies}";
 
@@ -81,7 +93,18 @@ class Recipe(db.Model, SerializerMixin):
     
     id = db.Column(db.Integer, primary_key=True);
     title = db.Column(db.String, nullable=False);
-    instructions = db.Column(db.String, nullable=False);
+    instructions = db.Column(db.String,
+                             db.CheckConstraint("NOT(LENGTH(instructions) < 50)"),
+                             nullable=False);
+    #instructions = db.Column(db.String,
+    #                         db.CheckConstraint("LENGTH(instructions) >= 50"),
+    #                         nullable=False);
+    #instructions = db.Column(db.String,
+    #                         db.CheckConstraint(db.func.length("instructions") >= 50),
+    #                         nullable=False);
+    #instructions = db.Column(db.String,
+    #                         db.CheckConstraint(db.func.length("Recipe.instructions") >= 50),
+    #                         nullable=False);
     minutes_to_complete = db.Column(db.Integer);
     
     #varname = db.relationship("ClassName", back_populates="correspondingattribute");

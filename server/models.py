@@ -61,7 +61,7 @@ class User(db.Model, SerializerMixin):
     recipes = db.relationship("Recipe");
 
     #want to exclude the recipies from the serializer
-    serialize_rules = ('-recepies',);
+    #serialize_rules = ('-recipes',);
 
     @validates("username")
     def isvalidusername(self, key, val):
@@ -86,16 +86,26 @@ class User(db.Model, SerializerMixin):
         return bcrypt.check_password_hash(self._password_hash, val.encode("utf-8"));
 
     def __repr__(self):
-        return f"<User: id: {self.id}, name: {self.username}, image_url: {self.image_url}, bio: {self.bio}>, recipies: {self.recepies}";
+        return f"<User: id: {self.id}, name: {self.username}, image_url: {self.image_url}, bio: {self.bio}, recipes: {self.recipes}>";
 
 class Recipe(db.Model, SerializerMixin):
     __tablename__ = 'recipes'
     
+    __table_args__ = (
+        db.CheckConstraint('length(instructions) >= 50'),
+    )
+
     id = db.Column(db.Integer, primary_key=True);
     title = db.Column(db.String, nullable=False);
     instructions = db.Column(db.String,
-                             db.CheckConstraint("NOT(LENGTH(instructions) < 50)"),
+    #                         db.CheckConstraint("length(instructions) >= 50"),
                              nullable=False);
+    #instructions = db.Column(db.String,
+    #                         db.CheckConstraint("instructions >= 50)"),
+    #                         nullable=False);
+    #instructions = db.Column(db.String,
+    #                         db.CheckConstraint("NOT(LENGTH(instructions) < 50)"),
+    #                         nullable=False);
     #instructions = db.Column(db.String,
     #                         db.CheckConstraint("LENGTH(instructions) >= 50"),
     #                         nullable=False);
@@ -111,17 +121,17 @@ class Recipe(db.Model, SerializerMixin):
     #varname = db.Column(DataType, db.ForeignKey('dbtablename.colname'))
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"));
 
-    @validates("title")
-    def isvalidtitle(self, key, val):
-        exists = mv.strHasAtMinimumXChars(1, val);
-        if (exists): return val;
-        else: raise ValueError("title must exist!");
+    #@validates("title")
+    #def isvalidtitle(self, key, val):
+    #    exists = mv.strHasAtMinimumXChars(1, val);
+    #    if (exists): return val;
+    #    else: raise ValueError("title must exist!");
 
-    @validates("instructions")
-    def isvalidinstructions(self, key, val):
-        mincharmet = mv.strHasAtMinimumXChars(50, val);
-        if (mincharmet): return val;
-        else: raise ValueError("instructions must have at minimum 50 characters!");
+    #@validates("instructions")
+    #def isvalidinstructions(self, key, val):
+    #    mincharmet = mv.strHasAtMinimumXChars(50, val);
+    #    if (mincharmet): return val;
+    #    else: raise ValueError("instructions must have at minimum 50 characters!");
     
     def __repr__(self):
         return f"<Recipe: title: {self.title}, instructions: {self.instructions}, minutes_to_complete: {self.minutes_to_complete}, user_id: {self.user_id}>";

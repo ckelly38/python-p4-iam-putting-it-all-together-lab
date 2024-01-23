@@ -32,22 +32,14 @@ class isUserLogIn:
         print("401 Error NOT AND NEVER LOGGED IN!");
         return self.retErrorWithMsg(None, "401 Error NOT AND NEVER LOGGED IN!");
 
-    def getValidDataObject(self, mstrs, mdataobj):
-        if (mdataobj == None): raise ValueError("None type not allowed here!");
-        if (mstrs == None or len(mstrs) < 1): return None;
-        rjkys = mdataobj.keys();
-        for mstr in mstrs:
-            if (mstr in rjkys): pass;
-            else:
-                errmsg = f"422 Error you must include a {mstr}!";
-                print(errmsg);
-                return {"Error": errmsg}, 422;
+    def retNone(self, vala = None, valb = None): return None;
+    def genMyDataObj(self, mstrs, mdataobj):
         retobj = dict();
         for mstr in mstrs:
             retobj[mstr] = mdataobj[mstr];
         return retobj;
 
-    def keysMustBePresentInObject(self, mstrs, mdataobj):
+    def getValidDataObjectWithRFuncCall(self, mstrs, mdataobj, rfunc):
         if (mdataobj == None): raise ValueError("None type not allowed here!");
         if (mstrs == None or len(mstrs) < 1): return None;
         rjkys = mdataobj.keys();
@@ -57,7 +49,13 @@ class isUserLogIn:
                 errmsg = f"422 Error you must include a {mstr}!";
                 print(errmsg);
                 return {"Error": errmsg}, 422;
-        return None;
+        return rfunc(mstrs, mdataobj);
+
+    def getValidDataObject(self, mstrs, mdataobj):
+        return self.getValidDataObjectWithRFuncCall(mstrs, mdataobj, self.genMyDataObj);
+
+    def keysMustBePresentInObject(self, mstrs, mdataobj):
+        return self.getValidDataObjectWithRFuncCall(mstrs, mdataobj, self.retNone);
 
 iuli = isUserLogIn();
 
@@ -183,6 +181,14 @@ class RecipeIndex(Resource):
         print("INSIDE RECIPIE-INDEX-LIST():");
         usr = User.query.filter_by(id=msess["user_id"]).first();
         print(usr);
+        print("all recipes:");
+        rps = Recipe.query.all();
+        #print(rps);
+        print(len(rps));
+        for rp in rps:
+            print(rp);
+            print(rp.user);
+            print(rp.user_id);
         print("user recipes:");
         print(usr.recipes);
         rpsdicts = [rp.to_dict() for rp in usr.recipes];

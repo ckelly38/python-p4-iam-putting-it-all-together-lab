@@ -120,6 +120,10 @@ class Recipe(db.Model, SerializerMixin):
     #varname = db.relationship("ClassName", back_populates="correspondingattribute");
     #varname = db.Column(DataType, db.ForeignKey('dbtablename.colname'))
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"));
+    user = db.relationship("User", back_populates="recipes");
+
+    #want to exclude the recipies from the serializer
+    serialize_rules = ('-user',);
 
     #@validates("title")
     #def isvalidtitle(self, key, val):
